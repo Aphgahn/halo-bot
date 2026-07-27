@@ -53,6 +53,7 @@ class CaptainSelect(UserSelect):
         data["captain"] = user.id
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"👑 Captain set to {user.mention}",
@@ -118,6 +119,7 @@ async def open_player_select(interaction, slot):
             data["players"][slot] = user.id
 
             save_roster(data)
+            await update_roster(interaction.client)
 
             await interaction.response.send_message(
                 f"👥 Slot {slot+1} set to {user.mention}",
@@ -197,6 +199,7 @@ class RemovePlayers(View):
         data["players"][slot] = None
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"🗑 Slot {slot+1} removed.",
@@ -296,6 +299,7 @@ class LookingAdd(UserSelect):
             data["looking_at"].append(user.id)
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"🔍 Added {user.mention}",
@@ -345,6 +349,7 @@ class RemoveRoles(View):
         data["captain"] = None
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             "🗑 Captain removed.",
@@ -363,6 +368,7 @@ class RemoveRoles(View):
         data["co_captain"] = None
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             "🗑 Co-Captain removed.",
