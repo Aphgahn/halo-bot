@@ -143,6 +143,38 @@ async def rosterupdate(interaction: discord.Interaction):
         ephemeral=True
     )
 
+@bot.tree.command(
+    name="setroster",
+    description="Create the live roster message"
+)
+async def setroster(
+    interaction: discord.Interaction
+):
+
+    if interaction.user.id != OWNER_ID:
+        await interaction.response.send_message(
+            "❌ You cannot use this.",
+            ephemeral=True
+        )
+        return
+
+
+    data = load_roster()
+
+
+    data["roster_channel"] = interaction.channel.id
+
+    save_roster(data)
+
+
+    await interaction.response.send_message(
+        "✅ Creating roster...",
+        ephemeral=True
+    )
+
+
+    await update_roster(bot)
+
 # ----------------------------
 # Events
 # ----------------------------
