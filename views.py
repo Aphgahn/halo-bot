@@ -73,6 +73,82 @@ class SelectView(View):
         super().__init__(timeout=300)
         self.add_item(selector)
 
+class PlayerSlots(discord.ui.View):
+
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    @discord.ui.button(
+        label="Slot 1",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot1(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 0)
+
+
+    @discord.ui.button(
+        label="Slot 2",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot2(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 1)
+
+
+    @discord.ui.button(
+        label="Slot 3",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot3(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 2)
+
+
+    @discord.ui.button(
+        label="Slot 4",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot4(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 3)
+
+
+    @discord.ui.button(
+        label="Slot 5",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot5(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 4)
+
+
+    @discord.ui.button(
+        label="Slot 6",
+        style=discord.ButtonStyle.primary
+    )
+    async def slot6(
+        self,
+        interaction,
+        button
+    ):
+        await open_player_select(interaction, 5)
 
 
 class RosterMenu(discord.ui.View):
@@ -147,3 +223,44 @@ async def players(
             "Looking At menu coming next.",
             ephemeral=True
         )
+
+async def open_player_select(
+    interaction,
+    slot
+):
+
+    class PlayerSelect(discord.ui.UserSelect):
+
+        def __init__(self):
+            super().__init__(
+                placeholder=f"Select player for slot {slot+1}",
+                min_values=1,
+                max_values=1
+            )
+
+
+        async def callback(self, interaction):
+
+            user = self.values[0]
+
+            data = load_roster()
+
+            data["players"][slot] = user.id
+
+            save_roster(data)
+
+
+            await interaction.response.send_message(
+                f"👥 Slot {slot+1} updated to {user.mention}",
+                ephemeral=True
+            )
+
+
+    view = SelectView(PlayerSelect())
+
+
+    await interaction.response.send_message(
+        f"Choose player for slot {slot+1}:",
+        view=view,
+        ephemeral=True
+    )
