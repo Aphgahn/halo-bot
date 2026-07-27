@@ -116,20 +116,22 @@ class RosterMenu(discord.ui.View):
 
 
     @discord.ui.button(
-        label="👥 Players",
-        style=discord.ButtonStyle.success
+    label="👥 Players",
+    style=discord.ButtonStyle.success
+)
+async def players(
+    self,
+    interaction: discord.Interaction,
+    button: discord.ui.Button
+):
+
+    view = PlayerSlots()
+
+    await interaction.response.send_message(
+        "Choose a player slot to edit:",
+        view=view,
+        ephemeral=True
     )
-    async def players(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        await interaction.response.send_message(
-            "Players menu coming next.",
-            ephemeral=True
-        )
-
 
     @discord.ui.button(
         label="🔍 Looking At",
