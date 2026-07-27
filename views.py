@@ -1,4 +1,78 @@
 import discord
+from discord.ui import UserSelect, View
+import json
+
+
+def load_roster():
+    with open("roster.json", "r") as f:
+        return json.load(f)
+
+
+def save_roster(data):
+    with open("roster.json", "w") as f:
+        json.dump(data, f, indent=4)
+
+
+class CaptainSelect(UserSelect):
+
+    def __init__(self):
+        super().__init__(
+            placeholder="Select the Captain",
+            min_values=1,
+            max_values=1
+        )
+
+
+    async def callback(self, interaction: discord.Interaction):
+
+        user = self.values[0]
+
+        data = load_roster()
+
+        data["captain"] = user.id
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            f"👑 Captain updated to {user.mention}",
+            ephemeral=True
+        )
+
+
+
+class CoCaptainSelect(UserSelect):
+
+    def __init__(self):
+        super().__init__(
+            placeholder="Select the Co-Captain",
+            min_values=1,
+            max_values=1
+        )
+
+
+    async def callback(self, interaction: discord.Interaction):
+
+        user = self.values[0]
+
+        data = load_roster()
+
+        data["co_captain"] = user.id
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            f"⭐ Co-Captain updated to {user.mention}",
+            ephemeral=True
+        )
+
+
+
+class SelectView(View):
+
+    def __init__(self, selector):
+        super().__init__(timeout=300)
+        self.add_item(selector)
+
 
 
 class RosterMenu(discord.ui.View):
@@ -16,8 +90,10 @@ class RosterMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
-            "Captain selection menu coming in Part 4.",
+            "Choose the Captain:",
+            view=SelectView(CaptainSelect()),
             ephemeral=True
         )
 
@@ -31,8 +107,10 @@ class RosterMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
-            "Co-Captain selection menu coming in Part 4.",
+            "Choose the Co-Captain:",
+            view=SelectView(CoCaptainSelect()),
             ephemeral=True
         )
 
@@ -46,8 +124,9 @@ class RosterMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
-            "Player slot menu coming in Part 4.",
+            "Players menu coming next.",
             ephemeral=True
         )
 
@@ -61,7 +140,8 @@ class RosterMenu(discord.ui.View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
+
         await interaction.response.send_message(
-            "Looking At menu coming in Part 4.",
+            "Looking At menu coming next.",
             ephemeral=True
         )
