@@ -2,6 +2,7 @@ import json
 import discord
 from discord.ext import commands
 from discord import app_commands
+import os
 
 # ----------------------------
 # Load config
@@ -10,7 +11,7 @@ from discord import app_commands
 with open("config.json", "r") as f:
     config = json.load(f)
 
-TOKEN = config["token"]
+TOKEN = os.getenv("TOKEN")
 OWNER_ID = config["owner_id"]
 
 # ----------------------------
