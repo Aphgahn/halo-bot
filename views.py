@@ -2,6 +2,8 @@ import discord
 from discord.ui import UserSelect, View
 import json
 
+from roster_display import update_roster
+
 
 # ----------------------------
 # ROSTER FILE FUNCTIONS
