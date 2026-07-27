@@ -1,0 +1,21 @@
+{
+    "captain": null,
+    "co_captain": null,
+
+    "players": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+    ],
+
+    "looking_at": [],
+
+    "roster_message": {
+        "guild": null,
+        "channel": null,
+        "message": null
+    }
+}
