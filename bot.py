@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import os
+from views import RosterMenu
 
 # ----------------------------
 # Load config
@@ -102,6 +103,29 @@ async def roster(interaction: discord.Interaction):
 
 
     await interaction.response.send_message(message)
+
+@bot.tree.command(
+    name="rosterupdate",
+    description="Open the roster editor"
+)
+async def rosterupdate(interaction: discord.Interaction):
+
+    if interaction.user.id != OWNER_ID:
+        await interaction.response.send_message(
+            "❌ You cannot use this command.",
+            ephemeral=True
+        )
+        return
+
+
+    view = RosterMenu()
+
+    await interaction.response.send_message(
+        "🟢 **HALO Roster Editor**\n\n"
+        "Choose what you want to edit:",
+        view=view,
+        ephemeral=True
+    )
 
 # ----------------------------
 # Events
