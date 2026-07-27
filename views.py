@@ -1,6 +1,7 @@
 import discord
 from discord.ui import UserSelect, View
 import json
+from roster_display import update_roster
 
 
 # ----------------------------
@@ -51,6 +52,7 @@ class CaptainSelect(UserSelect):
         data = load_roster()
         data["captain"] = user.id
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"👑 Captain set to {user.mention}",
@@ -80,6 +82,7 @@ class CoCaptainSelect(UserSelect):
         data = load_roster()
         data["co_captain"] = user.id
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"⭐ Co-Captain set to {user.mention}",
@@ -114,6 +117,7 @@ async def open_player_select(interaction, slot):
             data["players"][slot] = user.id
 
             save_roster(data)
+            await update_roster(interaction.client)
 
             await interaction.response.send_message(
                 f"👥 Slot {slot+1} updated to {user.mention}",
@@ -206,6 +210,7 @@ class LookingAdd(UserSelect):
             data["looking_at"].append(user.id)
 
         save_roster(data)
+        await update_roster(interaction.client)
 
         await interaction.response.send_message(
             f"🔍 Added {user.mention}",
