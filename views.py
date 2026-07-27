@@ -3,6 +3,10 @@ from discord.ui import UserSelect, View
 import json
 
 
+# ----------------------------
+# Roster File Handling
+# ----------------------------
+
 def load_roster():
     with open("roster.json", "r") as f:
         return json.load(f)
@@ -12,6 +16,10 @@ def save_roster(data):
     with open("roster.json", "w") as f:
         json.dump(data, f, indent=4)
 
+
+# ----------------------------
+# Captain Selector
+# ----------------------------
 
 class CaptainSelect(UserSelect):
 
@@ -39,6 +47,9 @@ class CaptainSelect(UserSelect):
         )
 
 
+# ----------------------------
+# Co Captain Selector
+# ----------------------------
 
 class CoCaptainSelect(UserSelect):
 
@@ -66,12 +77,21 @@ class CoCaptainSelect(UserSelect):
         )
 
 
+# ----------------------------
+# Generic Selector View
+# ----------------------------
 
 class SelectView(View):
 
     def __init__(self, selector):
         super().__init__(timeout=300)
         self.add_item(selector)
+
+
+
+# ----------------------------
+# Player Slot Menu
+# ----------------------------
 
 class PlayerSlots(discord.ui.View):
 
@@ -83,11 +103,7 @@ class PlayerSlots(discord.ui.View):
         label="Slot 1",
         style=discord.ButtonStyle.primary
     )
-    async def slot1(
-        self,
-        interaction,
-        button
-    ):
+    async def slot1(self, interaction, button):
         await open_player_select(interaction, 0)
 
 
@@ -95,11 +111,7 @@ class PlayerSlots(discord.ui.View):
         label="Slot 2",
         style=discord.ButtonStyle.primary
     )
-    async def slot2(
-        self,
-        interaction,
-        button
-    ):
+    async def slot2(self, interaction, button):
         await open_player_select(interaction, 1)
 
 
@@ -107,11 +119,7 @@ class PlayerSlots(discord.ui.View):
         label="Slot 3",
         style=discord.ButtonStyle.primary
     )
-    async def slot3(
-        self,
-        interaction,
-        button
-    ):
+    async def slot3(self, interaction, button):
         await open_player_select(interaction, 2)
 
 
@@ -119,11 +127,7 @@ class PlayerSlots(discord.ui.View):
         label="Slot 4",
         style=discord.ButtonStyle.primary
     )
-    async def slot4(
-        self,
-        interaction,
-        button
-    ):
+    async def slot4(self, interaction, button):
         await open_player_select(interaction, 3)
 
 
@@ -131,11 +135,7 @@ class PlayerSlots(discord.ui.View):
         label="Slot 5",
         style=discord.ButtonStyle.primary
     )
-    async def slot5(
-        self,
-        interaction,
-        button
-    ):
+    async def slot5(self, interaction, button):
         await open_player_select(interaction, 4)
 
 
@@ -143,13 +143,14 @@ class PlayerSlots(discord.ui.View):
         label="Slot 6",
         style=discord.ButtonStyle.primary
     )
-    async def slot6(
-        self,
-        interaction,
-        button
-    ):
+    async def slot6(self, interaction, button):
         await open_player_select(interaction, 5)
 
+
+
+# ----------------------------
+# Main Roster Menu
+# ----------------------------
 
 class RosterMenu(discord.ui.View):
 
@@ -192,22 +193,21 @@ class RosterMenu(discord.ui.View):
 
 
     @discord.ui.button(
-    label="👥 Players",
-    style=discord.ButtonStyle.success
-)
-async def players(
-    self,
-    interaction: discord.Interaction,
-    button: discord.ui.Button
-):
-
-    view = PlayerSlots()
-
-    await interaction.response.send_message(
-        "Choose a player slot to edit:",
-        view=view,
-        ephemeral=True
+        label="👥 Players",
+        style=discord.ButtonStyle.success
     )
+    async def players(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+
+        await interaction.response.send_message(
+            "Choose a player slot:",
+            view=PlayerSlots(),
+            ephemeral=True
+        )
+
 
     @discord.ui.button(
         label="🔍 Looking At",
@@ -224,6 +224,12 @@ async def players(
             ephemeral=True
         )
 
+
+
+# ----------------------------
+# Player Selection
+# ----------------------------
+
 async def open_player_select(
     interaction,
     slot
@@ -233,7 +239,7 @@ async def open_player_select(
 
         def __init__(self):
             super().__init__(
-                placeholder=f"Select player for slot {slot+1}",
+                placeholder=f"Select player for slot {slot + 1}",
                 min_values=1,
                 max_values=1
             )
@@ -249,18 +255,14 @@ async def open_player_select(
 
             save_roster(data)
 
-
             await interaction.response.send_message(
-                f"👥 Slot {slot+1} updated to {user.mention}",
+                f"👥 Slot {slot + 1} updated to {user.mention}",
                 ephemeral=True
             )
 
 
-    view = SelectView(PlayerSelect())
-
-
     await interaction.response.send_message(
-        f"Choose player for slot {slot+1}:",
-        view=view,
+        f"Choose player for slot {slot + 1}:",
+        view=SelectView(PlayerSelect()),
         ephemeral=True
     )
