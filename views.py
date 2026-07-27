@@ -4,7 +4,7 @@ import json
 
 
 # ----------------------------
-# Roster File Handling
+# File handling
 # ----------------------------
 
 def load_roster():
@@ -17,68 +17,9 @@ def save_roster(data):
         json.dump(data, f, indent=4)
 
 
-# ----------------------------
-# Captain Selector
-# ----------------------------
-
-class CaptainSelect(UserSelect):
-
-    def __init__(self):
-        super().__init__(
-            placeholder="Select the Captain",
-            min_values=1,
-            max_values=1
-        )
-
-
-    async def callback(self, interaction: discord.Interaction):
-
-        user = self.values[0]
-
-        data = load_roster()
-
-        data["captain"] = user.id
-
-        save_roster(data)
-
-        await interaction.response.send_message(
-            f"👑 Captain updated to {user.mention}",
-            ephemeral=True
-        )
-
 
 # ----------------------------
-# Co Captain Selector
-# ----------------------------
-
-class CoCaptainSelect(UserSelect):
-
-    def __init__(self):
-        super().__init__(
-            placeholder="Select the Co-Captain",
-            min_values=1,
-            max_values=1
-        )
-
-
-    async def callback(self, interaction: discord.Interaction):
-
-        user = self.values[0]
-
-        data = load_roster()
-
-        data["co_captain"] = user.id
-
-        save_roster(data)
-
-        await interaction.response.send_message(
-            f"⭐ Co-Captain updated to {user.mention}",
-            ephemeral=True
-        )
-
-
-# ----------------------------
-# Generic Selector View
+# Generic selector
 # ----------------------------
 
 class SelectView(View):
@@ -90,156 +31,75 @@ class SelectView(View):
 
 
 # ----------------------------
-# Player Slot Menu
+# Captain
 # ----------------------------
 
-class PlayerSlots(discord.ui.View):
+class CaptainSelect(UserSelect):
 
     def __init__(self):
-        super().__init__(timeout=300)
+        super().__init__(
+            placeholder="Select Captain",
+            min_values=1,
+            max_values=1
+        )
 
 
-    @discord.ui.button(
-        label="Slot 1",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot1(self, interaction, button):
-        await open_player_select(interaction, 0)
+    async def callback(self, interaction):
 
+        user = self.values[0]
 
-    @discord.ui.button(
-        label="Slot 2",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot2(self, interaction, button):
-        await open_player_select(interaction, 1)
+        data = load_roster()
+        data["captain"] = user.id
+        save_roster(data)
 
-
-    @discord.ui.button(
-        label="Slot 3",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot3(self, interaction, button):
-        await open_player_select(interaction, 2)
-
-
-    @discord.ui.button(
-        label="Slot 4",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot4(self, interaction, button):
-        await open_player_select(interaction, 3)
-
-
-    @discord.ui.button(
-        label="Slot 5",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot5(self, interaction, button):
-        await open_player_select(interaction, 4)
-
-
-    @discord.ui.button(
-        label="Slot 6",
-        style=discord.ButtonStyle.primary
-    )
-    async def slot6(self, interaction, button):
-        await open_player_select(interaction, 5)
+        await interaction.response.send_message(
+            f"👑 Captain set to {user.mention}",
+            ephemeral=True
+        )
 
 
 
 # ----------------------------
-# Main Roster Menu
+# Co Captain
 # ----------------------------
 
-class RosterMenu(discord.ui.View):
+class CoCaptainSelect(UserSelect):
 
     def __init__(self):
-        super().__init__(timeout=300)
-
-
-    @discord.ui.button(
-        label="👑 Captain",
-        style=discord.ButtonStyle.primary
-    )
-    async def captain(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        await interaction.response.send_message(
-            "Choose the Captain:",
-            view=SelectView(CaptainSelect()),
-            ephemeral=True
+        super().__init__(
+            placeholder="Select Co-Captain",
+            min_values=1,
+            max_values=1
         )
 
 
-    @discord.ui.button(
-        label="⭐ Co-Captain",
-        style=discord.ButtonStyle.primary
-    )
-    async def co_captain(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
+    async def callback(self, interaction):
+
+        user = self.values[0]
+
+        data = load_roster()
+        data["co_captain"] = user.id
+        save_roster(data)
 
         await interaction.response.send_message(
-            "Choose the Co-Captain:",
-            view=SelectView(CoCaptainSelect()),
-            ephemeral=True
-        )
-
-
-    @discord.ui.button(
-        label="👥 Players",
-        style=discord.ButtonStyle.success
-    )
-    async def players(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        await interaction.response.send_message(
-            "Choose a player slot:",
-            view=PlayerSlots(),
-            ephemeral=True
-        )
-
-
-    @discord.ui.button(
-        label="🔍 Looking At",
-        style=discord.ButtonStyle.secondary
-    )
-    async def looking(
-        self,
-        interaction: discord.Interaction,
-        button: discord.ui.Button
-    ):
-
-        await interaction.response.send_message(
-            "Looking At menu coming next.",
+            f"⭐ Co-Captain set to {user.mention}",
             ephemeral=True
         )
 
 
 
 # ----------------------------
-# Player Selection
+# Player selector
 # ----------------------------
 
-async def open_player_select(
-    interaction,
-    slot
-):
+async def open_player_select(interaction, slot):
 
-    class PlayerSelect(discord.ui.UserSelect):
+
+    class PlayerSelect(UserSelect):
 
         def __init__(self):
             super().__init__(
-                placeholder=f"Select player for slot {slot + 1}",
+                placeholder=f"Slot {slot+1}",
                 min_values=1,
                 max_values=1
             )
@@ -256,13 +116,185 @@ async def open_player_select(
             save_roster(data)
 
             await interaction.response.send_message(
-                f"👥 Slot {slot + 1} updated to {user.mention}",
+                f"👥 Slot {slot+1} updated to {user.mention}",
                 ephemeral=True
             )
 
 
     await interaction.response.send_message(
-        f"Choose player for slot {slot + 1}:",
+        f"Select player for slot {slot+1}",
         view=SelectView(PlayerSelect()),
         ephemeral=True
     )
+
+
+
+# ----------------------------
+# Player slots
+# ----------------------------
+
+class PlayerSlots(View):
+
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    async def slot_button(
+        self,
+        interaction,
+        slot
+    ):
+
+        await open_player_select(
+            interaction,
+            slot
+        )
+
+
+    @discord.ui.button(label="Slot 1", style=discord.ButtonStyle.primary)
+    async def slot1(self, interaction, button):
+        await self.slot_button(interaction,0)
+
+
+    @discord.ui.button(label="Slot 2", style=discord.ButtonStyle.primary)
+    async def slot2(self, interaction, button):
+        await self.slot_button(interaction,1)
+
+
+    @discord.ui.button(label="Slot 3", style=discord.ButtonStyle.primary)
+    async def slot3(self, interaction, button):
+        await self.slot_button(interaction,2)
+
+
+    @discord.ui.button(label="Slot 4", style=discord.ButtonStyle.primary)
+    async def slot4(self, interaction, button):
+        await self.slot_button(interaction,3)
+
+
+    @discord.ui.button(label="Slot 5", style=discord.ButtonStyle.primary)
+    async def slot5(self, interaction, button):
+        await self.slot_button(interaction,4)
+
+
+    @discord.ui.button(label="Slot 6", style=discord.ButtonStyle.primary)
+    async def slot6(self, interaction, button):
+        await self.slot_button(interaction,5)
+
+
+
+# ----------------------------
+# Looking At Add
+# ----------------------------
+
+class LookingAdd(UserSelect):
+
+    def __init__(self):
+        super().__init__(
+            placeholder="Add player looking at",
+            min_values=1,
+            max_values=1
+        )
+
+
+    async def callback(self, interaction):
+
+        user = self.values[0]
+
+        data = load_roster()
+
+        if user.id not in data["looking_at"]:
+            data["looking_at"].append(user.id)
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            f"🔍 Added {user.mention}",
+            ephemeral=True
+        )
+
+
+
+# ----------------------------
+# Looking At menu
+# ----------------------------
+
+class LookingMenu(View):
+
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    @discord.ui.button(
+        label="➕ Add Player",
+        style=discord.ButtonStyle.success
+    )
+    async def add(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Select player:",
+            view=SelectView(LookingAdd()),
+            ephemeral=True
+        )
+
+
+
+# ----------------------------
+# Main menu
+# ----------------------------
+
+class RosterMenu(View):
+
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    @discord.ui.button(
+        label="👑 Captain",
+        style=discord.ButtonStyle.primary
+    )
+    async def captain(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Choose Captain:",
+            view=SelectView(CaptainSelect()),
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="⭐ Co-Captain",
+        style=discord.ButtonStyle.primary
+    )
+    async def co(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Choose Co-Captain:",
+            view=SelectView(CoCaptainSelect()),
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="👥 Players",
+        style=discord.ButtonStyle.success
+    )
+    async def players(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Choose slot:",
+            view=PlayerSlots(),
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="🔍 Looking At",
+        style=discord.ButtonStyle.secondary
+    )
+    async def looking(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Looking At:",
+            view=LookingMenu(),
+            ephemeral=True
+        )
