@@ -6,6 +6,7 @@ import os
 from views import RosterMenu
 from flask import Flask
 from threading import Thread
+from roster_display import update_roster, create_roster_text
 
 app = Flask(__name__)
 
