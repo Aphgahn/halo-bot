@@ -131,7 +131,46 @@ async def open_player_select(interaction, slot):
         ephemeral=True
     )
 
+class RemoveRoles(View):
 
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    @discord.ui.button(
+        label="🗑 Remove Captain",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove_captain(self, interaction, button):
+
+        data = load_roster()
+
+        data["captain"] = None
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            "🗑 Captain removed.",
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="🗑 Remove Co-Captain",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove_cocaptain(self, interaction, button):
+
+        data = load_roster()
+
+        data["co_captain"] = None
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            "🗑 Co-Captain removed.",
+            ephemeral=True
+        )
 
 # ----------------------------
 # Player slots
@@ -184,7 +223,72 @@ class PlayerSlots(View):
     async def slot6(self, interaction, button):
         await self.slot_button(interaction,5)
 
+class RemovePlayers(View):
 
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    async def remove_slot(self, interaction, slot):
+
+        data = load_roster()
+
+        data["players"][slot] = None
+
+        save_roster(data)
+
+        await interaction.response.send_message(
+            f"🗑 Player Slot {slot + 1} removed.",
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="Remove Slot 1",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove1(self, interaction, button):
+        await self.remove_slot(interaction, 0)
+
+
+    @discord.ui.button(
+        label="Remove Slot 2",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove2(self, interaction, button):
+        await self.remove_slot(interaction, 1)
+
+
+    @discord.ui.button(
+        label="Remove Slot 3",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove3(self, interaction, button):
+        await self.remove_slot(interaction, 2)
+
+
+    @discord.ui.button(
+        label="Remove Slot 4",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove4(self, interaction, button):
+        await self.remove_slot(interaction, 3)
+
+
+    @discord.ui.button(
+        label="Remove Slot 5",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove5(self, interaction, button):
+        await self.remove_slot(interaction, 4)
+
+
+    @discord.ui.button(
+        label="Remove Slot 6",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove6(self, interaction, button):
+        await self.remove_slot(interaction, 5)
 
 # ----------------------------
 # Looking At Add
@@ -217,7 +321,36 @@ class LookingAdd(UserSelect):
             ephemeral=True
         )
 
+class PlayerActionMenu(View):
 
+    def __init__(self):
+        super().__init__(timeout=300)
+
+
+    @discord.ui.button(
+        label="➕ Change Player",
+        style=discord.ButtonStyle.primary
+    )
+    async def change(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Choose slot:",
+            view=PlayerSlots(),
+            ephemeral=True
+        )
+
+
+    @discord.ui.button(
+        label="🗑 Remove Player",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove(self, interaction, button):
+
+        await interaction.response.send_message(
+            "Choose slot:",
+            view=RemovePlayers(),
+            ephemeral=True
+        )
 
 # ----------------------------
 # Looking At menu
@@ -254,6 +387,22 @@ class RosterMenu(View):
 
 
     @discord.ui.button(
+        label="🗑 Remove",
+        style=discord.ButtonStyle.danger
+    )
+    async def remove(
+        self,
+        interaction,
+        button
+    ):
+
+    await interaction.response.send_message(
+        "Choose what to remove:",
+        view=RemoveRoles(),
+        ephemeral=True
+    )
+    
+    @discord.ui.button(
         label="👑 Captain",
         style=discord.ButtonStyle.primary
     )
@@ -286,8 +435,8 @@ class RosterMenu(View):
     async def players(self, interaction, button):
 
         await interaction.response.send_message(
-            "Choose slot:",
-            view=PlayerSlots(),
+            "Choose an action:",
+            view=PlayerActionMenu(),
             ephemeral=True
         )
 
