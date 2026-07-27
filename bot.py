@@ -155,5 +155,5 @@ async def on_ready():
     print("Slash commands synced.")
     print("----------------------")
 
-
+keep_alive()
 bot.run(TOKEN)
