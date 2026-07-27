@@ -1,6 +1,7 @@
 import discord
 import json
 
+HALO_EMOJI = "<:HALO:1529461747411451974>"
 
 def load_roster():
     with open("roster.json", "r") as f:
@@ -27,7 +28,7 @@ async def create_roster_text(bot):
 
 
     text = (
-        "🟢 **HALO Roster:**\n\n"
+        f"{HALO_EMOJI} **HALO Roster:**\n\n"
         f"👑 **[Captain]** {mention(data['captain'])}\n"
         f"⭐ **[Co-Captain]** {mention(data['co_captain'])}\n\n"
     )
@@ -37,7 +38,7 @@ async def create_roster_text(bot):
         text += f"{mention(player)}\n"
 
 
-    text += "\n\n🔍 **Players Wanted / Looking At:**\n\n"
+    text += f"\n\n{HALO_EMOJI} **Players Wanted / Looking At:**\n\n"
 
 
     if len(data["looking_at"]) == 0:
