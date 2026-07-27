@@ -38,7 +38,7 @@ async def create_roster_text(bot):
         text += f"{mention(player)}\n"
 
 
-    text += f"\n\n{HALO_EMOJI} **Players Wanted / Looking At:**\n\n"
+    text += f"\n\n{HALO_EMOJI} **Scouting List**\n\n"
 
 
     if len(data["looking_at"]) == 0:
