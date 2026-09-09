@@ -1,31 +1,19 @@
 import discord
-import json
+
+from github_storage import get_roster, save_roster
+
 
 HALO_EMOJI = "<:HALO:1529461747411451974>"
 
-def load_roster():
-    with open("roster.json", "r") as f:
-        return json.load(f)
-
-
-
-def save_roster(data):
-    with open("roster.json", "w") as f:
-        json.dump(data, f, indent=4)
-
-
 
 async def create_roster_text(bot):
-
-    data = load_roster()
-
+    data = await get_roster()
 
     def mention(user_id):
         if user_id:
             return f"<@{user_id}>"
+
         return "VACANT"
-
-
 
     text = (
         f"{HALO_EMOJI} **HALO Roster:**\n\n"
@@ -33,75 +21,96 @@ async def create_roster_text(bot):
         f"⭐ **[Co-Captain]** {mention(data['co_captain'])}\n\n"
     )
 
-
     for player in data["players"]:
         text += f"{mention(player)}\n"
 
+    text += (
+        f"\n\n"
+        f"{HALO_EMOJI} **Scouting List**\n\n"
+    )
 
-    text += f"\n\n{HALO_EMOJI} **Scouting List**\n\n"
-
-
-    if len(data["looking_at"]) == 0:
+    if not data["looking_at"]:
         text += "None"
-
     else:
         for player in data["looking_at"]:
             text += f"{mention(player)}\n"
 
-
     return text
 
 
-
 async def update_roster(bot):
+    data = await get_roster()
 
-    data = load_roster()
-
-    if not data["roster_channel"]:
+    if not data.get("roster_channel"):
         return
-
 
     channel = bot.get_channel(
         data["roster_channel"]
     )
 
-
     if not channel:
+        print(
+            "[Roster] Could not find roster channel."
+        )
         return
-
 
     message = None
 
-
-    if data["roster_message"]:
-
+    if data.get("roster_message"):
         try:
             message = await channel.fetch_message(
                 data["roster_message"]
             )
 
-        except:
-            pass
+        except discord.NotFound:
+            message = None
 
+        except discord.Forbidden:
+            print(
+                "[Roster] Bot does not have permission "
+                "to fetch the roster message."
+            )
+            return
 
+        except discord.HTTPException as e:
+            print(
+                f"[Roster] Failed to fetch message: {e}"
+            )
+            return
 
     content = await create_roster_text(bot)
 
-
-
     if message:
+        try:
+            await message.edit(
+                content=content
+            )
 
-        await message.edit(
-            content=content
-        )
+            print("[Roster] Live roster updated.")
 
+        except discord.HTTPException as e:
+            print(
+                f"[Roster] Failed to edit roster: {e}"
+            )
 
     else:
+        try:
+            message = await channel.send(
+                content
+            )
 
-        message = await channel.send(
-            content
-        )
+            data["roster_message"] = message.id
 
-        data["roster_message"] = message.id
+            await save_roster(
+                data,
+                "Set live roster message"
+            )
 
-        save_roster(data)
+            print(
+                "[Roster] Created new live roster message."
+            )
+
+        except discord.HTTPException as e:
+            print(
+                f"[Roster] Failed to create roster message: {e}"
+            )
