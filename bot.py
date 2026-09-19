@@ -69,6 +69,7 @@ with open(
 TOKEN = os.getenv("TOKEN")
 
 OWNER_ID = config["owner_id"]
+APHGAHN = config["aphgahn"]
 
 
 if not TOKEN:
@@ -138,7 +139,7 @@ async def rosterupdate(
     interaction: discord.Interaction
 ):
 
-    if interaction.user.id != OWNER_ID:
+    if interaction.user.id != OWNER_ID and interaction.user.id != APHGAHN:
 
         await interaction.response.send_message(
             "❌ You cannot use this command.",
@@ -174,7 +175,7 @@ async def setroster(
     interaction: discord.Interaction
 ):
 
-    if interaction.user.id != OWNER_ID:
+    if interaction.user.id != OWNER_ID and interaction.user.id != APHGAHN:
 
         await interaction.response.send_message(
             "❌ You cannot use this.",
