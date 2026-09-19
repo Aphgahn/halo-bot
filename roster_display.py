@@ -3,7 +3,7 @@ import discord
 from github_storage import get_roster, save_roster
 
 
-HALO_EMOJI = "<:HALO:1529461747411451974>"
+HALO_EMOJI = "<:otherHALO:1547343825981276210>"
 
 
 async def create_roster_text(bot):
@@ -26,7 +26,7 @@ async def create_roster_text(bot):
 
     text += (
         f"\n\n"
-        f"{HALO_EMOJI} **Scouting List**\n\n"
+        f"{HALO_EMOJI} **Tryouts**\n\n"
     )
 
     if not data["looking_at"]:
