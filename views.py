@@ -582,7 +582,8 @@ class RosterDashboard(View):
         return self
 
     async def do_action(self, interaction, action):
-        await interaction.response.defer()
+        if action not in ("create", "rename", "rename_tryouts"):
+            await interaction.response.defer()
         self.notice = None
         self.pending_action = None
         if action in ("create", "rename"):
