@@ -504,6 +504,7 @@ class DashboardDeleteConfirm(View):
     @discord.ui.button(label="Confirm delete", style=discord.ButtonStyle.danger)
     async def confirm(self, interaction, button):
         await interaction.response.defer()
+        await interaction.response.defer()
         data = await get_roster()
         idx = int(self.key.split(":", 1)[1])
         rosters = data.setdefault("additional_rosters", [])
@@ -581,6 +582,7 @@ class RosterDashboard(View):
         return self
 
     async def do_action(self, interaction, action):
+        await interaction.response.defer()
         self.notice = None
         self.pending_action = None
         if action in ("create", "rename"):
