@@ -171,10 +171,44 @@ class RosterPicker(Select):
         )
 
 
+class ConfirmDeleteRoster(View):
+    def __init__(self, roster_key, roster_name):
+        super().__init__(timeout=60)
+        self.roster_key = roster_key
+        self.roster_name = roster_name
+
+    @discord.ui.button(label="Yes, Delete Roster", style=discord.ButtonStyle.danger)
+    async def confirm_delete(self, interaction, button):
+        data = await get_roster()
+        try:
+            index = int(self.roster_key.split(":", 1)[1])
+            rosters = data.setdefault("additional_rosters", [])
+        except (ValueError, IndexError):
+            await interaction.response.send_message("That roster could not be found.", ephemeral=True)
+            return
+
+        if not 0 <= index < len(rosters) or rosters[index].get("name", "Additional Roster") != self.roster_name:
+            await interaction.response.send_message("That roster has changed or no longer exists. Please reopen Manage Rosters and try again.", ephemeral=True)
+            return
+
+        del rosters[index]
+        await save_roster(data, f"Deleted roster: {self.roster_name}")
+        await update_roster(interaction.client)
+        await interaction.response.edit_message(content=f"🗑️ Roster **{self.roster_name}** has been deleted.", view=None)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel_delete(self, interaction, button):
+        await interaction.response.edit_message(content="Roster deletion cancelled.", view=None)
+
+
 class RosterActions(View):
     def __init__(self, roster_key):
         super().__init__(timeout=300)
         self.roster_key = roster_key
+        if roster_key == "main":
+            for item in self.children:
+                if isinstance(item, discord.ui.Button) and item.label == "🗑 Delete Roster":
+                    item.disabled = True
 
     @discord.ui.button(label="➕ Add Player", style=discord.ButtonStyle.success, row=0)
     async def add_player(self, interaction, button):
@@ -205,6 +239,22 @@ class RosterActions(View):
         data = await get_roster()
         current_name = next((name for key, name, _ in roster_entries(data) if key == self.roster_key), "")
         await interaction.response.send_modal(RosterNameModal("rename", self.roster_key, current_name))
+
+    @discord.ui.button(label="🗑 Delete Roster", style=discord.ButtonStyle.danger, row=2)
+    async def delete_roster(self, interaction, button):
+        if self.roster_key == "main":
+            await interaction.response.send_message("The main roster cannot be deleted.", ephemeral=True)
+            return
+        data = await get_roster()
+        current_name = next((name for key, name, _ in roster_entries(data) if key == self.roster_key), None)
+        if current_name is None:
+            await interaction.response.send_message("That roster could not be found. Please reopen Manage Rosters.", ephemeral=True)
+            return
+        await interaction.response.send_message(
+            f"⚠️ Are you sure you want to delete **{current_name}**? This removes its roster entry and player list.",
+            view=ConfirmDeleteRoster(self.roster_key, current_name),
+            ephemeral=True
+        )
 
 
 class RosterManager(View):
