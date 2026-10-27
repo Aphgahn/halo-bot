@@ -121,7 +121,7 @@ class RosterNameModal(Modal):
             return
         data = await get_roster()
         if self.mode == "create":
-            data.setdefault("additional_rosters", []).append({"name": name, "players": []})
+            data.setdefault("additional_rosters", []).append({"name": name, "players": [], "captain": None, "co_captain": None})
             message = f"✅ Created roster **{name}**. Use **/rosterupdate** → **Manage Rosters** to add players."
             commit = f"Created roster: {name}"
         else:
