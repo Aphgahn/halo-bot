@@ -13,7 +13,7 @@ async def create_roster_text(bot):
 
     main_name = data.get("roster_name", "HALO")
     text = (
-        f"{HALO_EMOJI} **{main_name} Roster:**\n\n"
+        f"{HALO_EMOJI} **{main_name}**\n\n"
         f"👑 **[Captain]** {mention(data.get('captain'))}\n"
         f"⭐ **[Co-Captain]** {mention(data.get('co_captain'))}\n\n"
     )
