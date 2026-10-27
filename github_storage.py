@@ -18,6 +18,7 @@ DEFAULT_ROSTER = {
     "players": [],
     "additional_rosters": [],
     "roster_name": "HALO",
+    "looking_at_name": "Tryouts",
     "looking_at": [],
     "roster_channel": None,
     "roster_message": None
@@ -66,6 +67,8 @@ async def get_roster():
             for roster in data["additional_rosters"]:
                 roster.setdefault("name", "Additional Roster")
                 roster.setdefault("players", [])
+                roster.setdefault("captain", None)
+                roster.setdefault("co_captain", None)
             return data
         except RuntimeError as e:
             print(f"[GitHub] Failed to load roster: {e}")

@@ -6,7 +6,7 @@ from roster_display import update_roster
 
 
 def roster_entries(data):
-    entries = [("main", "HALO Main Roster", data.get("players", []))]
+    entries = [("main", data.get("roster_name", "HALO Roster"), data.get("players", []))]
     for index, roster in enumerate(data.get("additional_rosters", [])):
         entries.append((f"extra:{index}", roster.get("name", f"Roster {index + 1}"), roster.get("players", [])))
     return entries
@@ -30,30 +30,39 @@ class SelectView(View):
 
 
 class CaptainSelect(UserSelect):
-    def __init__(self):
+    def __init__(self, roster_key="main"):
         super().__init__(placeholder="Select Captain", min_values=1, max_values=1)
+        self.roster_key = roster_key
 
     async def callback(self, interaction):
         user = self.values[0]
         data = await get_roster()
-        data["captain"] = user.id
-        await save_roster(data, f"Captain changed to {user.id}")
+        if self.roster_key == "main":
+            data["captain"] = user.id
+        else:
+            index = int(self.roster_key.split(":", 1)[1])
+            data["additional_rosters"][index]["captain"] = user.id
+        await save_roster(data, f"Captain for {self.roster_key} changed to {user.id}")
         await update_roster(interaction.client)
         await interaction.response.send_message(f"👑 Captain set to {user.mention}", ephemeral=True)
 
 
 class CoCaptainSelect(UserSelect):
-    def __init__(self):
+    def __init__(self, roster_key="main"):
         super().__init__(placeholder="Select Co-Captain", min_values=1, max_values=1)
+        self.roster_key = roster_key
 
     async def callback(self, interaction):
         user = self.values[0]
         data = await get_roster()
-        data["co_captain"] = user.id
-        await save_roster(data, f"Co-Captain changed to {user.id}")
+        if self.roster_key == "main":
+            data["co_captain"] = user.id
+        else:
+            index = int(self.roster_key.split(":", 1)[1])
+            data["additional_rosters"][index]["co_captain"] = user.id
+        await save_roster(data, f"Co-Captain for {self.roster_key} changed to {user.id}")
         await update_roster(interaction.client)
         await interaction.response.send_message(f"⭐ Co-Captain set to {user.mention}", ephemeral=True)
-
 
 class AddPlayerSelect(UserSelect):
     def __init__(self, roster_key):
@@ -112,9 +121,13 @@ class RosterNameModal(Modal):
             return
         data = await get_roster()
         if self.mode == "create":
-            data.setdefault("additional_rosters", []).append({"name": name, "players": []})
+            data.setdefault("additional_rosters", []).append({"name": name, "players": [], "captain": None, "co_captain": None})
             message = f"✅ Created roster **{name}**. Use **/rosterupdate** → **Manage Rosters** to add players."
             commit = f"Created roster: {name}"
+        elif self.mode == "rename_tryouts":
+            data["looking_at_name"] = name
+            message = f"✅ Tryouts heading renamed to **{name}**."
+            commit = f"Renamed tryouts heading: {name}"
         else:
             if self.roster_key == "main":
                 data["roster_name"] = name
@@ -179,7 +192,15 @@ class RosterActions(View):
             ephemeral=True
         )
 
-    @discord.ui.button(label="✏️ Rename Roster", style=discord.ButtonStyle.primary, row=1)
+    @discord.ui.button(label="👑 Set Captain", style=discord.ButtonStyle.primary, row=1)
+    async def set_captain(self, interaction, button):
+        await interaction.response.send_message("Select this roster captain:", view=SelectView(CaptainSelect(self.roster_key)), ephemeral=True)
+
+    @discord.ui.button(label="⭐ Set Co-Captain", style=discord.ButtonStyle.primary, row=1)
+    async def set_co_captain(self, interaction, button):
+        await interaction.response.send_message("Select this roster co-captain:", view=SelectView(CoCaptainSelect(self.roster_key)), ephemeral=True)
+
+    @discord.ui.button(label="✏️ Rename Roster", style=discord.ButtonStyle.primary, row=2)
     async def rename_roster(self, interaction, button):
         data = await get_roster()
         current_name = next((name for key, name, _ in roster_entries(data) if key == self.roster_key), "")
@@ -288,6 +309,12 @@ class RosterMenu(View):
     @discord.ui.button(label="🔍 Looking At", style=discord.ButtonStyle.secondary, row=1)
     async def looking(self, interaction, button):
         await interaction.response.send_message("Looking At menu:", view=LookingMenu(), ephemeral=True)
+
+    @discord.ui.button(label="✏️ Rename Tryouts Heading", style=discord.ButtonStyle.secondary, row=2)
+    async def rename_tryouts_heading(self, interaction, button):
+        data = await get_roster()
+        current_name = data.get("looking_at_name", "Tryouts")
+        await interaction.response.send_modal(RosterNameModal("rename_tryouts", current_name=current_name))
 
     @discord.ui.button(label="🗑 Remove Roles", style=discord.ButtonStyle.danger, row=1)
     async def remove_roles(self, interaction, button):
