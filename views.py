@@ -412,6 +412,7 @@ class DashboardMemberSelect(UserSelect):
         self.dashboard, self.action = dashboard, action
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         user = self.values[0]
         data = await get_roster()
         action, key = self.action, self.dashboard.roster_key
