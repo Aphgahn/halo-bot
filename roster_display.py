@@ -23,12 +23,12 @@ async def create_roster_text(bot):
 
     for roster in data.get("additional_rosters", []):
         text += (
-            f"\\n\\n{HALO_EMOJI} **{roster.get('name', 'Additional Roster')}**\\n\\n"
-            f"👑 **[Captain]** {mention(roster.get('captain'))}\\n"
-            f"⭐ **[Co-Captain]** {mention(roster.get('co_captain'))}\\n\\n"
+            f"\n\n{HALO_EMOJI} **{roster.get('name', 'Additional Roster')}**\n\n"
+            f"👑 **[Captain]** {mention(roster.get('captain'))}\n"
+            f"⭐ **[Co-Captain]** {mention(roster.get('co_captain'))}\n\n"
         )
         roster_players = roster.get("players", [])
-        text += "\\n".join(mention(player) for player in roster_players) if roster_players else "No players added yet."
+        text += "\n".join(mention(player) for player in roster_players) if roster_players else "No players added yet."
 
     text += f"\n\n{HALO_EMOJI} **Tryouts**\n\n"
     text += "\n".join(mention(player) for player in data.get("looking_at", [])) or "None"
