@@ -460,6 +460,7 @@ class DashboardMemberSelect(UserSelect):
                     self.dashboard.notice = f"{user.mention} is not on tryouts."
         await save_roster(data, f"Roster editor: {action} {user.id}")
         await update_roster(interaction.client)
+        self.dashboard.pending_action = None
         await self.dashboard.refresh()
         await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
 
@@ -504,7 +505,7 @@ class DashboardNameModal(Modal):
         await save_roster(data, commit)
         await update_roster(interaction.client)
         await self.dashboard.refresh()
-        await interaction.response.send_message("Saved.", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
         try:
             await self.message.edit(content=self.dashboard.status_text(), view=self.dashboard)
         except discord.HTTPException as error:
