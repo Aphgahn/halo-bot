@@ -6,7 +6,7 @@ from roster_display import update_roster
 
 
 def roster_entries(data):
-    entries = [("main", "HALO Main Roster", data.get("players", []))]
+    entries = [("main", data.get("roster_name", "HALO Roster"), data.get("players", []))]
     for index, roster in enumerate(data.get("additional_rosters", [])):
         entries.append((f"extra:{index}", roster.get("name", f"Roster {index + 1}"), roster.get("players", [])))
     return entries
