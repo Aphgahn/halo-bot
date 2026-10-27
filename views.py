@@ -387,11 +387,10 @@ class DashboardRosterSelect(Select):
 class DashboardActionSelect(Select):
     def __init__(self, dashboard):
         actions = [("Add player", "add"), ("Remove player", "remove"),
+                   ("Set captain", "captain"), ("Set co-captain", "co"),
+                   ("Remove captain", "remove_captain"), ("Remove co-captain", "remove_co"),
                    ("Rename roster", "rename"), ("Delete roster", "delete"),
                    ("Create roster", "create")]
-        if dashboard.roster_key == "main":
-            actions.extend([("Set captain", "captain"), ("Set co-captain", "co"),
-                            ("Remove captain", "remove_captain"), ("Remove co-captain", "remove_co")])
         super().__init__(placeholder="Choose an action", min_values=1, max_values=1,
                          options=[discord.SelectOption(label=a, value=b) for a, b in actions],
                          row=1, custom_id="halo_dashboard_action")
@@ -605,14 +604,21 @@ class RosterDashboard(View):
                     return
                 self.notice = "That roster no longer exists. Refresh and select another."
         elif action in ("remove_captain", "remove_co"):
-            if self.roster_key != "main":
-                self.notice = "Captain and co-captain are only available for the main roster."
-            else:
-                data = await get_roster()
-                field = "captain" if action == "remove_captain" else "co_captain"
+            data = await get_roster()
+            field = "captain" if action == "remove_captain" else "co_captain"
+            if self.roster_key == "main":
                 data[field] = None
-                await save_roster(data, f"Removed {field} for main roster")
-                await update_roster(interaction.client)
-                self.notice = f"Removed {field.replace('_', ' ')}."
+            else:
+                idx = int(self.roster_key.split(":", 1)[1])
+                rosters = data.setdefault("additional_rosters", [])
+                if not 0 <= idx < len(rosters):
+                    self.notice = "That roster no longer exists. Refresh and select another."
+                    await self.refresh()
+                    await interaction.edit_original_response(content=self.status_text(), view=self)
+                    return
+                rosters[idx][field] = None
+            await save_roster(data, f"Removed {field} from {self.selected_name}")
+            await update_roster(interaction.client)
+            self.notice = f"Removed {field.replace('_', ' ')} from {self.selected_name}."
         await self.refresh()
         await interaction.edit_original_response(content=self.status_text(), view=self)
