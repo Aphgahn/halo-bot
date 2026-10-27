@@ -464,6 +464,7 @@ class DashboardNameModal(Modal):
         if not name:
             await interaction.response.send_message("Please enter a name.", ephemeral=True)
             return
+        await interaction.response.defer()
         data = await get_roster()
         if self.mode == "create":
             rosters = data.setdefault("additional_rosters", [])
