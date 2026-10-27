@@ -30,7 +30,7 @@ async def create_roster_text(bot):
         roster_players = roster.get("players", [])
         text += "\n".join(mention(player) for player in roster_players) if roster_players else "No players added yet."
 
-    text += f"\\n\\n{HALO_EMOJI} **{data.get('looking_at_name', 'Tryouts')}**\\n\\n"
+    text += f"\n\n{HALO_EMOJI} **{data.get('looking_at_name', 'Tryouts')}**\n\n"
     text += "\n".join(mention(player) for player in data.get("looking_at", [])) or "None"
     return text
 
