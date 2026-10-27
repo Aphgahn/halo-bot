@@ -377,22 +377,21 @@ class DashboardRosterSelect(Select):
         self.dashboard = dashboard
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         self.dashboard.roster_key = self.values[0]
         self.dashboard.notice = None
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class DashboardActionSelect(Select):
     def __init__(self, dashboard):
-        actions = [
-            ("Add player", "add"), ("Remove player", "remove"),
-            ("Set captain", "captain"), ("Set co-captain", "co"),
-            ("Rename roster", "rename"), ("Delete roster", "delete"),
-            ("Create roster", "create"), ("Add tryout", "tryout_add"),
-            ("Remove tryout", "tryout_remove"), ("Rename tryouts heading", "rename_tryouts"),
-            ("Remove captain", "remove_captain"), ("Remove co-captain", "remove_co")
-        ]
+        actions = [("Add player", "add"), ("Remove player", "remove"),
+                   ("Rename roster", "rename"), ("Delete roster", "delete"),
+                   ("Create roster", "create")]
+        if dashboard.roster_key == "main":
+            actions.extend([("Set captain", "captain"), ("Set co-captain", "co"),
+                            ("Remove captain", "remove_captain"), ("Remove co-captain", "remove_co")])
         super().__init__(placeholder="Choose an action", min_values=1, max_values=1,
                          options=[discord.SelectOption(label=a, value=b) for a, b in actions],
                          row=1, custom_id="halo_dashboard_action")
@@ -405,13 +404,13 @@ class DashboardActionSelect(Select):
 class DashboardMemberSelect(UserSelect):
     def __init__(self, dashboard, action):
         placeholders = {"add": "Select player to add", "remove": "Select player to remove",
-                        "captain": "Select captain", "co": "Select co-captain",
-                        "tryout_add": "Select player for tryouts", "tryout_remove": "Select tryout to remove"}
+                        "captain": "Select captain", "co": "Select co-captain"}
         super().__init__(placeholder=placeholders[action], min_values=1, max_values=1, row=2,
                          custom_id="halo_dashboard_member_" + action)
         self.dashboard, self.action = dashboard, action
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         user = self.values[0]
         data = await get_roster()
         action, key = self.action, self.dashboard.roster_key
@@ -422,7 +421,7 @@ class DashboardMemberSelect(UserSelect):
                 if not 0 <= idx < len(rosters):
                     self.dashboard.notice = "That roster no longer exists. Select another roster."
                     await self.dashboard.refresh()
-                    await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+                    await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
                     return
             players = get_players_for_key(data, key)
             if action == "add":
@@ -444,25 +443,11 @@ class DashboardMemberSelect(UserSelect):
                 else:
                     data["additional_rosters"][int(key.split(":", 1)[1])][field] = user.id
                 self.dashboard.notice = f"Set {field.replace('_', ' ')} to {user.mention}."
-        else:
-            people = data.setdefault("looking_at", [])
-            if action == "tryout_add":
-                if user.id not in people:
-                    people.append(user.id)
-                    self.dashboard.notice = f"Added {user.mention} to tryouts."
-                else:
-                    self.dashboard.notice = f"{user.mention} is already on tryouts."
-            else:
-                if user.id in people:
-                    people.remove(user.id)
-                    self.dashboard.notice = f"Removed {user.mention} from tryouts."
-                else:
-                    self.dashboard.notice = f"{user.mention} is not on tryouts."
         await save_roster(data, f"Roster editor: {action} {user.id}")
         await update_roster(interaction.client)
         self.dashboard.pending_action = None
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class DashboardNameModal(Modal):
@@ -479,10 +464,11 @@ class DashboardNameModal(Modal):
         if not name:
             await interaction.response.send_message("Please enter a name.", ephemeral=True)
             return
+        await interaction.response.defer()
         data = await get_roster()
         if self.mode == "create":
             rosters = data.setdefault("additional_rosters", [])
-            rosters.append({"name": name, "players": [], "captain": None, "co_captain": None})
+            rosters.append({"name": name, "players": []})
             self.dashboard.roster_key = f"extra:{len(rosters) - 1}"
             self.dashboard.notice = f"Created roster {name}. It is now selected."
             commit = f"Created roster: {name}"
@@ -505,7 +491,6 @@ class DashboardNameModal(Modal):
         await save_roster(data, commit)
         await update_roster(interaction.client)
         await self.dashboard.refresh()
-        await interaction.response.defer(ephemeral=True)
         try:
             await self.message.edit(content=self.dashboard.status_text(), view=self.dashboard)
         except discord.HTTPException as error:
@@ -519,6 +504,8 @@ class DashboardDeleteConfirm(View):
 
     @discord.ui.button(label="Confirm delete", style=discord.ButtonStyle.danger)
     async def confirm(self, interaction, button):
+        await interaction.response.defer()
+        await interaction.response.defer()
         data = await get_roster()
         idx = int(self.key.split(":", 1)[1])
         rosters = data.setdefault("additional_rosters", [])
@@ -531,7 +518,7 @@ class DashboardDeleteConfirm(View):
             await save_roster(data, f"Deleted roster: {self.name}")
             await update_roster(interaction.client)
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
     async def cancel(self, interaction, button):
@@ -546,6 +533,7 @@ class DashboardButton(discord.ui.Button):
         self.dashboard, self.action = dashboard, action
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         if self.action == "refresh":
             await update_roster(interaction.client)
             self.dashboard.notice = "Dashboard refreshed."
@@ -553,7 +541,7 @@ class DashboardButton(discord.ui.Button):
             self.dashboard.roster_key = "main"
             self.dashboard.notice = "Selection reset to the main roster."
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class RosterDashboard(View):
@@ -572,13 +560,13 @@ class RosterDashboard(View):
     def status_text(self):
         notice = f"\n\n{self.notice}" if self.notice else ""
         return ("🟢 **HALO Roster Editor**\n"
-                f"**Selected roster:** {getattr(self, 'selected_name', 'Main roster')}\n"
-                "Choose a roster and an action below. This panel updates in place, so you can make multiple changes without running /rosterupdate again."
+                f"**{getattr(self, 'selected_name', 'Main roster')}**"
                 + notice)
 
     async def refresh(self):
         self.clear_items()
         data = await get_roster()
+        self.data = data
         entries = roster_entries(data)
         valid = [key for key, _name, _players in entries]
         if self.roster_key not in valid:
@@ -597,44 +585,34 @@ class RosterDashboard(View):
     async def do_action(self, interaction, action):
         self.notice = None
         self.pending_action = None
-        if action in ("add", "remove", "captain", "co", "tryout_add", "tryout_remove"):
-            self.pending_action = action
-        elif action in ("create", "rename", "rename_tryouts"):
-            data = await get_roster()
-            current = ""
+        if action in ("create", "rename"):
             key = self.roster_key
-            if action == "rename":
-                current = next((name for entry_key, name, _ in roster_entries(data) if entry_key == key), "")
-            elif action == "rename_tryouts":
-                current = data.get("looking_at_name", "Tryouts")
-            await interaction.response.send_modal(DashboardNameModal(self, interaction.message, action, current, key))
+            await interaction.response.send_modal(DashboardNameModal(self, interaction.message, action, "", key))
             return
-        elif action == "delete":
+        await interaction.response.defer()
+        if action in ("add", "remove", "captain", "co"):
+            self.pending_action = action
+        if action == "delete":
             if self.roster_key == "main":
                 self.notice = "The main roster is protected and cannot be deleted."
             else:
-                data = await get_roster()
+                data = getattr(self, "data", {})
                 current = next((name for key, name, _ in roster_entries(data) if key == self.roster_key), None)
                 if current is not None:
-                    await interaction.response.edit_message(
+                    await interaction.edit_original_response(
                         content=f"⚠️ Delete **{current}** and its player list? This cannot be undone.",
                         view=DashboardDeleteConfirm(self, self.roster_key, current))
                     return
                 self.notice = "That roster no longer exists. Refresh and select another."
         elif action in ("remove_captain", "remove_co"):
-            data = await get_roster()
-            field = "captain" if action == "remove_captain" else "co_captain"
-            if self.roster_key == "main":
-                data[field] = None
+            if self.roster_key != "main":
+                self.notice = "Captain and co-captain are only available for the main roster."
             else:
-                idx = int(self.roster_key.split(":", 1)[1])
-                rosters = data.setdefault("additional_rosters", [])
-                if not 0 <= idx < len(rosters):
-                    self.notice = "That roster no longer exists."
-                else:
-                    rosters[idx][field] = None
-            await save_roster(data, f"Removed {field} for {self.roster_key}")
-            await update_roster(interaction.client)
-            self.notice = f"Removed {field.replace('_', ' ')}."
+                data = await get_roster()
+                field = "captain" if action == "remove_captain" else "co_captain"
+                data[field] = None
+                await save_roster(data, f"Removed {field} for main roster")
+                await update_roster(interaction.client)
+                self.notice = f"Removed {field.replace('_', ' ')}."
         await self.refresh()
-        await interaction.response.edit_message(content=self.status_text(), view=self)
+        await interaction.edit_original_response(content=self.status_text(), view=self)

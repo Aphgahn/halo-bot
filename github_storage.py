@@ -67,8 +67,15 @@ async def get_roster():
             for roster in data["additional_rosters"]:
                 roster.setdefault("name", "Additional Roster")
                 roster.setdefault("players", [])
-                roster.setdefault("captain", None)
-                roster.setdefault("co_captain", None)
+            # Move the old global tryouts list into a normal roster exactly once.
+            if not data.get("_tryouts_migrated"):
+                tryout_players = data.get("looking_at", [])
+                tryout_name = data.get("looking_at_name", "Tryouts")
+                if tryout_players or tryout_name != "Tryouts":
+                    data["additional_rosters"].append({"name": tryout_name or "Tryouts", "players": list(tryout_players)})
+                data["looking_at"] = []
+                data["looking_at_name"] = "Tryouts"
+                data["_tryouts_migrated"] = True
             return data
         except RuntimeError as e:
             print(f"[GitHub] Failed to load roster: {e}")
