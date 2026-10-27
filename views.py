@@ -124,6 +124,10 @@ class RosterNameModal(Modal):
             data.setdefault("additional_rosters", []).append({"name": name, "players": [], "captain": None, "co_captain": None})
             message = f"✅ Created roster **{name}**. Use **/rosterupdate** → **Manage Rosters** to add players."
             commit = f"Created roster: {name}"
+        elif self.mode == "rename_tryouts":
+            data["looking_at_name"] = name
+            message = f"✅ Tryouts heading renamed to **{name}**."
+            commit = f"Renamed tryouts heading: {name}"
         else:
             if self.roster_key == "main":
                 data["roster_name"] = name
@@ -305,6 +309,12 @@ class RosterMenu(View):
     @discord.ui.button(label="🔍 Looking At", style=discord.ButtonStyle.secondary, row=1)
     async def looking(self, interaction, button):
         await interaction.response.send_message("Looking At menu:", view=LookingMenu(), ephemeral=True)
+
+    @discord.ui.button(label="✏️ Rename Tryouts Heading", style=discord.ButtonStyle.secondary, row=2)
+    async def rename_tryouts_heading(self, interaction, button):
+        data = await get_roster()
+        current_name = data.get("looking_at_name", "Tryouts")
+        await interaction.response.send_modal(RosterNameModal("rename_tryouts", current_name=current_name))
 
     @discord.ui.button(label="🗑 Remove Roles", style=discord.ButtonStyle.danger, row=1)
     async def remove_roles(self, interaction, button):
