@@ -377,10 +377,11 @@ class DashboardRosterSelect(Select):
         self.dashboard = dashboard
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         self.dashboard.roster_key = self.values[0]
         self.dashboard.notice = None
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class DashboardActionSelect(Select):
@@ -463,7 +464,7 @@ class DashboardMemberSelect(UserSelect):
         await update_roster(interaction.client)
         self.dashboard.pending_action = None
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class DashboardNameModal(Modal):
@@ -547,6 +548,7 @@ class DashboardButton(discord.ui.Button):
         self.dashboard, self.action = dashboard, action
 
     async def callback(self, interaction):
+        await interaction.response.defer()
         if self.action == "refresh":
             await update_roster(interaction.client)
             self.dashboard.notice = "Dashboard refreshed."
@@ -554,7 +556,7 @@ class DashboardButton(discord.ui.Button):
             self.dashboard.roster_key = "main"
             self.dashboard.notice = "Selection reset to the main roster."
         await self.dashboard.refresh()
-        await interaction.response.edit_message(content=self.dashboard.status_text(), view=self.dashboard)
+        await interaction.edit_original_response(content=self.dashboard.status_text(), view=self.dashboard)
 
 
 class RosterDashboard(View):
@@ -580,6 +582,7 @@ class RosterDashboard(View):
     async def refresh(self):
         self.clear_items()
         data = await get_roster()
+        self.data = data
         entries = roster_entries(data)
         valid = [key for key, _name, _players in entries]
         if self.roster_key not in valid:
@@ -601,7 +604,7 @@ class RosterDashboard(View):
         if action in ("add", "remove", "captain", "co", "tryout_add", "tryout_remove"):
             self.pending_action = action
         elif action in ("create", "rename", "rename_tryouts"):
-            data = await get_roster()
+            data = getattr(self, "data", {})
             current = ""
             key = self.roster_key
             if action == "rename":
@@ -610,14 +613,16 @@ class RosterDashboard(View):
                 current = data.get("looking_at_name", "Tryouts")
             await interaction.response.send_modal(DashboardNameModal(self, interaction.message, action, current, key))
             return
-        elif action == "delete":
+        else:
+            await interaction.response.defer()
+        if action == "delete":
             if self.roster_key == "main":
                 self.notice = "The main roster is protected and cannot be deleted."
             else:
-                data = await get_roster()
+                data = getattr(self, "data", {})
                 current = next((name for key, name, _ in roster_entries(data) if key == self.roster_key), None)
                 if current is not None:
-                    await interaction.response.edit_message(
+                    await interaction.edit_original_response(
                         content=f"⚠️ Delete **{current}** and its player list? This cannot be undone.",
                         view=DashboardDeleteConfirm(self, self.roster_key, current))
                     return
@@ -638,4 +643,4 @@ class RosterDashboard(View):
             await update_roster(interaction.client)
             self.notice = f"Removed {field.replace('_', ' ')}."
         await self.refresh()
-        await interaction.response.edit_message(content=self.status_text(), view=self)
+        await interaction.edit_original_response(content=self.status_text(), view=self)
