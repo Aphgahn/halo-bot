@@ -17,27 +17,25 @@ async def create_roster_text(bot):
             lines.append(f"👑 **[Captain]** {mention(roster['captain'])}")
         if roster.get("co_captain"):
             lines.append(f"⭐ **[Co-Captain]** {mention(roster['co_captain'])}")
-        return "\\n".join(lines)
+        return "\n".join(lines)
 
     main_name = data.get("roster_name", "HALO")
     leadership = leadership_lines(data)
-    text = f"{HALO_EMOJI} **{main_name}**\\n\\n"
+    text = f"{HALO_EMOJI} **{main_name}**\n\n"
     if leadership:
-        text += leadership + "\\n\\n"
+        text += leadership + "\n\n"
 
     players = data.get("players", [])
     text += "\n".join(mention(player) for player in players) if players else "No players added yet."
 
     for roster in data.get("additional_rosters", []):
-        text += (
-            f"\n\n{HALO_EMOJI} **{roster.get('name', 'Additional Roster')}**\n\n"
-            f"👑 **[Captain]** {mention(roster.get('captain'))}\n"
-            f"⭐ **[Co-Captain]** {mention(roster.get('co_captain'))}\n\n"
-        )
+        text += f"\n\n{HALO_EMOJI} **{roster.get('name', 'Additional Roster')}**\n\n"
+        leadership = leadership_lines(roster)
+        if leadership:
+            text += leadership + "\n\n"
         roster_players = roster.get("players", [])
         text += "\n".join(mention(player) for player in roster_players) if roster_players else "No players added yet."
     return text
-
 
 async def update_roster(bot):
     data = await get_roster()
