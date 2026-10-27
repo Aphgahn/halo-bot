@@ -11,12 +11,19 @@ async def create_roster_text(bot):
     def mention(user_id):
         return f"<@{user_id}>" if user_id else "VACANT"
 
+    def leadership_lines(roster):
+        lines = []
+        if roster.get("captain"):
+            lines.append(f"👑 **[Captain]** {mention(roster['captain'])}")
+        if roster.get("co_captain"):
+            lines.append(f"⭐ **[Co-Captain]** {mention(roster['co_captain'])}")
+        return "\\n".join(lines)
+
     main_name = data.get("roster_name", "HALO")
-    text = (
-        f"{HALO_EMOJI} **{main_name}**\n\n"
-        f"👑 **[Captain]** {mention(data.get('captain'))}\n"
-        f"⭐ **[Co-Captain]** {mention(data.get('co_captain'))}\n\n"
-    )
+    leadership = leadership_lines(data)
+    text = f"{HALO_EMOJI} **{main_name}**\\n\\n"
+    if leadership:
+        text += leadership + "\\n\\n"
 
     players = data.get("players", [])
     text += "\n".join(mention(player) for player in players) if players else "No players added yet."
