@@ -9,9 +9,7 @@
         598153611628773376,
         409464662170796032
     ],
-    "looking_at": [
-        1335473071850520751
-    ],
+    "looking_at": [],
     "roster_channel": 1529229415110803619,
     "roster_message": 1547340317085278309,
     "additional_rosters": [
@@ -26,9 +24,16 @@
                 598153611628773376
             ],
             "captain": 1329139967896850556,
-            "co_captain": 1458430773068693648
+            "co_captain": null
+        },
+        {
+            "name": "Tryouts",
+            "players": [
+                1335473071850520751
+            ]
         }
     ],
     "roster_name": "-[ VRES ]- VAIL EU",
-    "looking_at_name": "Tryouts"
+    "looking_at_name": "Tryouts",
+    "_tryouts_migrated": true
 }
