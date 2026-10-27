@@ -67,6 +67,8 @@ async def get_roster():
             for roster in data["additional_rosters"]:
                 roster.setdefault("name", "Additional Roster")
                 roster.setdefault("players", [])
+                roster.setdefault("captain", None)
+                roster.setdefault("co_captain", None)
             # Move the old global tryouts list into a normal roster exactly once.
             if not data.get("_tryouts_migrated"):
                 tryout_players = data.get("looking_at", [])
