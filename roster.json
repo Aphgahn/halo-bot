@@ -17,7 +17,9 @@
     "additional_rosters": [
         {
             "name": "VCL - VAIL EU",
-            "players": [],
+            "players": [
+                838831222603382804
+            ],
             "captain": 1329139967896850556,
             "co_captain": 1458430773068693648
         }
