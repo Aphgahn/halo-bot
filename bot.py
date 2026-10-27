@@ -4,7 +4,7 @@ import discord
 
 from discord.ext import commands
 
-from views import RosterMenu
+from views import RosterMenu, RosterDashboard
 from flask import Flask
 from threading import Thread
 
@@ -149,7 +149,7 @@ async def rosterupdate(
         return
 
 
-    view = RosterMenu()
+    view = await RosterDashboard.create()
 
 
     await interaction.response.send_message(
