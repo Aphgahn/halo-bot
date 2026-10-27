@@ -583,14 +583,13 @@ class RosterDashboard(View):
     async def do_action(self, interaction, action):
         self.notice = None
         self.pending_action = None
-        if action in ("add", "remove", "captain", "co", "tryout_add", "tryout_remove"):
-            self.pending_action = action
-        elif action in ("create", "rename"):
+        if action in ("create", "rename"):
             key = self.roster_key
             await interaction.response.send_modal(DashboardNameModal(self, interaction.message, action, "", key))
             return
-        else:
-            await interaction.response.defer()
+        await interaction.response.defer()
+        if action in ("add", "remove", "captain", "co"):
+            self.pending_action = action
         if action == "delete":
             if self.roster_key == "main":
                 self.notice = "The main roster is protected and cannot be deleted."
