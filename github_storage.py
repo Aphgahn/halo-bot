@@ -18,6 +18,7 @@ DEFAULT_ROSTER = {
     "players": [],
     "additional_rosters": [],
     "roster_name": "HALO",
+    "looking_at_name": "Tryouts",
     "looking_at": [],
     "roster_channel": None,
     "roster_message": None
