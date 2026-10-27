@@ -16,9 +16,12 @@
     "roster_message": 1547340317085278309,
     "additional_rosters": [
         {
-            "name": "Test",
-            "players": []
+            "name": "VCL - VAIL EU",
+            "players": [],
+            "captain": null,
+            "co_captain": null
         }
     ],
-    "roster_name": "VRES - VAIL EU"
+    "roster_name": "VRES - VAIL EU",
+    "looking_at_name": "Tryouts"
 }
