@@ -28,7 +28,7 @@
             "co_captain": null
         },
         {
-            "name": "Tryouts",
+            "name": "VAIL EU Tryouts",
             "players": [
                 1335473071850520751
             ],
@@ -37,7 +37,9 @@
         },
         {
             "name": "Orion Drift NA",
-            "players": []
+            "players": [],
+            "captain": null,
+            "co_captain": null
         }
     ],
     "roster_name": "-[ VRES ]- VAIL EU",
